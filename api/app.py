@@ -137,7 +137,7 @@ def handle_text_message(event):
 
 
 @app.get("/")
-async def root():
+def root():
     return {"message": "LINE Bot API is running"}
 
 if __name__ == '__main__':
