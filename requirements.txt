@@ -1,0 +1,29 @@
+# Web Framework
+flask==3.0.0
+
+# Line Bot SDK
+line-bot-sdk==3.7.0
+
+# HTTP Requests
+requests==2.31.0
+
+# Date and Time Handling
+python-dateutil==2.8.2
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# OpenAI/Groq API
+openai==1.3.0
+
+# Regular Expressions (內建在 Python 中，不需要安裝)
+# re
+
+# Operating System Interface (內建在 Python 中，不需要安裝)
+# os
+
+# JSON Processing (內建在 Python 中，不需要安裝)
+# json
+
+# Time Module (內建在 Python 中，不需要安裝)
+# time
