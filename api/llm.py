@@ -2,8 +2,7 @@ from openai import OpenAI
 import requests
 import re
 import os
-# key = 'sk-gCVIo7s4Cb847BEDA194D5F792Ad4bE0B81bAbFb3d41E1A0'
-# key='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'
+
 
 def get_completion(content,model="chatgpt-4o-latest"):
     client = OpenAI(
