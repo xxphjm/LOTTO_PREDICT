@@ -62,7 +62,7 @@ def fetch_history_data(period_range,seqNo):
     根據使用者輸入的時間範圍（半年、一年、三年），計算起始日期與結束日期，
     並依月份呼叫 API 取得大樂透歷史資料，僅保留期號、開獎號碼與開獎日期。
     """
-    period_options = {"半年": 6, "一年": 12, "三年": 24}
+    period_options = {"半年": 6, "一年": 12, "三年": 36}
     if period_range not in period_options:
         raise ValueError("請輸入有效的時間範圍：半年、一年、三年")
     
