@@ -59,12 +59,12 @@ def process_superlotto_json(json_data,seqNo):
 
 def fetch_history_data(period_range,seqNo):
     """
-    根據使用者輸入的時間範圍（半年、一年、三年），計算起始日期與結束日期，
+    根據使用者輸入的時間範圍（半年、一年、二年），計算起始日期與結束日期，
     並依月份呼叫 API 取得大樂透歷史資料，僅保留期號、開獎號碼與開獎日期。
     """
-    period_options = {"半年": 6, "一年": 12, "三年": 24}
+    period_options = {"半年": 6, "一年": 12, "二年": 24}
     if period_range not in period_options:
-        raise ValueError("請輸入有效的時間範圍：半年、一年、三年")
+        raise ValueError("請輸入有效的時間範圍：半年、一年、二年")
     
     months_range = period_options[period_range]
     # 結束月份以目前月份為準
@@ -89,8 +89,8 @@ def fetch_history_data(period_range,seqNo):
     return all_results
 
 if __name__ == "__main__":
-    # 請使用者輸入欲取得的歷史時段（半年、一年、三年）
-    user_input = input("請輸入欲抓取的歷史時段（半年、一年、三年）：").strip()
+    # 請使用者輸入欲取得的歷史時段（半年、一年、二年）
+    user_input = input("請輸入欲抓取的歷史時段（半年、一年、二年）：").strip()
     seqNo=input("請輸入要查詢的類型：").strip()
     try:
         history_data = fetch_history_data(user_input,seqNo)

@@ -112,8 +112,8 @@ def handle_text_message(event):
             period = "半年"
         elif "一年" in message_text:
             period = "一年"
-        elif "三年" in message_text:
-            period = "三年"
+        elif "二年" in message_text:
+            period = "二年"
         
         if period:
             seqNo = user_states[user_id]["seqNo"]
