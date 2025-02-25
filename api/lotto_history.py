@@ -2,7 +2,7 @@ import requests
 import datetime
 import time
 from dateutil.relativedelta import relativedelta
-
+from datetime import datetime
 def fetch_superlotto_data(year, month,seqNo):
     """
     根據指定的年與月，呼叫大樂透 API。
@@ -53,7 +53,7 @@ def process_superlotto_json(json_data,seqNo):
             "period": period,
             "winning_numbers": winning_numbers[0:6],
             "special_number": winning_numbers[-1],
-            "draw_date": draw_date
+            "draw_date":datetime.fromisoformat(draw_date).strftime('%Y-%m-%d')
         })
     return results
 
