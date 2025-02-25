@@ -8,7 +8,7 @@ from linebot.v3.messaging import (
     MessagingApi,
     ReplyMessageRequest,
     TextMessage,
-    ShowLoadingAnimationRequest
+    # ShowLoadingAnimationRequest
 )
 from linebot.v3.webhook import WebhookParser
 from linebot.v3 import (
@@ -114,7 +114,7 @@ def handle_text_message(event):
         if period:
             seqNo = user_states[user_id]["seqNo"]
             lottery_type = user_states[user_id]["lottery_type"]
-            messaging_api.show_loading_animation(ShowLoadingAnimationRequest(chatId=event.source.user_id, loadingSeconds=10))
+            # messaging_api.show_loading_animation(ShowLoadingAnimationRequest(chatId=event.source.user_id, loadingSeconds=10))
             # 根據指令抓取歷史資料
             results = fetch_history_data(period, seqNo)
             if results:
