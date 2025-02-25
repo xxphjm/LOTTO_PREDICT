@@ -9,6 +9,7 @@ from linebot.v3.messaging import (
     MessagingApi,
     ReplyMessageRequest,
     TextMessage,
+    # ShowLoadingAnimationRequest
 )
 from linebot.v3.webhook import WebhookParser
 from linebot.v3 import WebhookHandler
