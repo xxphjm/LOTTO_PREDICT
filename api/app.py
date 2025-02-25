@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify,abort
 from dateutil.relativedelta import relativedelta
-from lotto_history import fetch_history_data
+from api.lotto_history import fetch_history_data
 from linebot.v3.webhooks import MessageEvent, PostbackEvent,TextMessageContent
 from linebot.v3.messaging import (
     Configuration,
@@ -17,8 +17,8 @@ from linebot.v3 import (
 from linebot.v3.exceptions import InvalidSignatureError
 import os
 from dotenv import load_dotenv
-from message import time_range_message,lottery_type_message
-from llm import get_groq_completion
+from api.message import time_range_message,lottery_type_message
+from api.llm import get_groq_completion
 
 app = Flask(__name__)
 load_dotenv()
@@ -28,11 +28,28 @@ configuration = Configuration(access_token=access_token)
 api_client = ApiClient(configuration)
 messaging_api = MessagingApi(api_client)  # 創建 messaging api 實例
 handler = WebhookHandler(os.getenv('LINE_CHANNEL_SECRET'))
-print("access_token:", access_token)
-print("channel_secret:", channel_secret)
 user_states = {}
 
+@app.route("/", methods=['GET'])
+def root():
+    return {"message": "LINE Bot API is running"}
+
 @app.route("/callback", methods=['POST'])
+def callback():
+    # 取得 X-Line-Signature header 的值
+    signature = request.headers['X-Line-Signature']
+
+    # 取得請求內容
+    body = request.get_data(as_text=True)
+
+    try:
+        # 驗證簽章
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        app.logger.info("Invalid signature. Please check your channel access token/channel secret.")
+        abort(400)
+
+    return 'OK'
 def callback():
     # 取得 X-Line-Signature header 的值
     signature = request.headers['X-Line-Signature']
@@ -136,9 +153,5 @@ def handle_text_message(event):
 
 
 
-@app.get("/")
-def root():
-    return {"message": "LINE Bot API is running"}
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=6000, debug=True)
+
