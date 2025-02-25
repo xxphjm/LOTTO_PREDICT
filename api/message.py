@@ -20,8 +20,8 @@ def time_range_message(lottery_type):
                         text="一年"
                     ),
                     MessageAction(
-                        label="三年",
-                        text="三年"
+                        label="二年",
+                        text="二年"
                     )
                 ]
             )
