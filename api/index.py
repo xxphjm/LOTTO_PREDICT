@@ -1,71 +1,74 @@
-from flask import Flask, request, jsonify,abort
-from dateutil.relativedelta import relativedelta
-from api.lotto_history import fetch_history_data
-from linebot.v3.webhooks import MessageEvent, PostbackEvent,TextMessageContent
+from http.server import BaseHTTPRequestHandler
+import json
+import os
+from dotenv import load_dotenv
+from linebot.v3.webhooks import MessageEvent, PostbackEvent, TextMessageContent
 from linebot.v3.messaging import (
     Configuration,
     ApiClient,
     MessagingApi,
     ReplyMessageRequest,
     TextMessage,
-    ShowLoadingAnimationRequest
 )
 from linebot.v3.webhook import WebhookParser
-from linebot.v3 import (
-    WebhookHandler
-)
+from linebot.v3 import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
-import os
-from dotenv import load_dotenv
-from api.message import time_range_message,lottery_type_message
+from api.message import time_range_message, lottery_type_message
 from api.llm import get_groq_completion
+from api.lotto_history import fetch_history_data
 
-app = Flask(__name__)
+# 載入環境變數
 load_dotenv()
+
+# LINE Bot 設定
 access_token = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
-channel_secret = os.getenv("LINE_CHANNEL_SECRET")  # 添加 channel_secret
+channel_secret = os.getenv("LINE_CHANNEL_SECRET")
 configuration = Configuration(access_token=access_token)
 api_client = ApiClient(configuration)
-messaging_api = MessagingApi(api_client)  # 創建 messaging api 實例
-handler = WebhookHandler(os.getenv('LINE_CHANNEL_SECRET'))
+messaging_api = MessagingApi(api_client)
+webhook_handler = WebhookHandler(channel_secret)
 user_states = {}
 
-@app.route("/", methods=['GET'])
-def root():
-    return {"message": "LINE Bot API is running"}
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/':
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            response = {'message': 'LINE Bot API is running'}
+            self.wfile.write(json.dumps(response).encode())
+        elif self.path == '/test':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b'test')
+        else:
+            self.send_response(404)
+            self.end_headers()
 
-@app.route("/callback", methods=['POST'])
-def callback():
-    # 取得 X-Line-Signature header 的值
-    signature = request.headers['X-Line-Signature']
+    def do_POST(self):
+        if self.path == '/callback':
+            content_length = int(self.headers['Content-Length'])
+            body = self.rfile.read(content_length).decode('utf-8')
+            signature = self.headers.get('X-Line-Signature', '')
+            try:
+                webhook_handler.handle(body, signature)
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b'OK')
+            except InvalidSignatureError:
+                    self.send_response(400)
+                    self.end_headers()
+                    self.wfile.write(b'Invalid signature')
+            except Exception as e:
+                    self.send_response(500)
+                    self.end_headers()
+                    self.wfile.write(str(e).encode())
+        else:
+            self.send_response(404)
+            self.end_headers()
 
-    # 取得請求內容
-    body = request.get_data(as_text=True)
-
-    try:
-        # 驗證簽章
-        handler.handle(body, signature)
-    except InvalidSignatureError:
-        app.logger.info("Invalid signature. Please check your channel access token/channel secret.")
-        abort(400)
-
-    return 'OK'
-def callback():
-    # 取得 X-Line-Signature header 的值
-    signature = request.headers['X-Line-Signature']
-
-    # 取得請求內容
-    body = request.get_data(as_text=True)
-
-    try:
-        # 驗證簽章
-        handler.handle(body, signature)
-    except InvalidSignatureError:
-        app.logger.info("Invalid signature. Please check your channel access token/channel secret.")
-        abort(400)
-
-    return 'OK'
-@handler.add(MessageEvent, message=TextMessageContent)
+@webhook_handler.add(MessageEvent, message=TextMessageContent)
 def handle_text_message(event):
     user_id = event.source.user_id
     message_text = event.message.text
@@ -114,7 +117,7 @@ def handle_text_message(event):
         if period:
             seqNo = user_states[user_id]["seqNo"]
             lottery_type = user_states[user_id]["lottery_type"]
-            messaging_api.show_loading_animation(ShowLoadingAnimationRequest(chatId=event.source.user_id, loadingSeconds=10))
+            # messaging_api.show_loading_animation(ShowLoadingAnimationRequest(chatId=event.source.user_id, loadingSeconds=10))
             # 根據指令抓取歷史資料
             results = fetch_history_data(period, seqNo)
             if results:
@@ -149,9 +152,8 @@ def handle_text_message(event):
                 messages=[TextMessage(text=reply_message)]
             )
         )
-    
 
 
 
-
-
+# Vercel 需要這個
+handler = Handler
